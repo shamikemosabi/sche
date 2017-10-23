@@ -8,13 +8,13 @@ public class sche
 	
 	
 	//doctors
-	person A = new person("A", "Dr. A");
-	person Ace = new person("Ace", "Acevado");
-	person C = new person("C", "Cindy");
-	person DLH = new person("DLH", "De La Hoya");
-	person Jen = new person("Jen", "Jen");
-	person Ju  = new person ("Ju", "Julia");
-	person Na =  new person ("Na", "Naef");
+	person A = new person("A", "Dr. A", 1);
+	person Ace = new person("Ace", "Acevado", 2);
+	person C = new person("C", "Cindy", 3);
+	person DLH = new person("DLH", "De La Hoya", 4);
+	person Jen = new person("Jen", "Jen", 5);
+	person Ju  = new person ("Ju", "Julia", 6);
+	person Na =  new person ("Na", "Naef", 7 );
 	
 	
 	//Array columns
@@ -68,6 +68,7 @@ public class sche
 			if(a==1){pa = Na;}
 			if(a==2){pa = C;}
 			add(C00,pa);
+			
 			//Tuesday
 			for(int b = 0; b<3; b++)
 			{
@@ -76,10 +77,12 @@ public class sche
 				if(b==1){pb = Na;}
 				if(b==2){pb = C;}
 				add(C01,pb);
+				
 				//Wednesday
 				for(int c = 0; c<3; c++)
 				{
-					do{ //only need this when a day doesn't have a lock person
+					/*
+					do{ //only need this when a day doesn't have a lock person, need to add until full
 					person pc = null;
 					if(c==0){pc = Ju;}
 					if(c==1){pc = Na;}
@@ -87,48 +90,116 @@ public class sche
 					add(C02,pc);
 					c++;
 					}while(C02.size()<2);
-					c--;
-					//Thursday		
-					for(int d = 0; d<3; d++)
-					{
-						person pd = null;
-						if(d==0){pd = Ju;}
-						if(d==1){pd = Na;}
-						if(d==2){pd = C;}
-						add(C03,pd);
-						//Friday
-						for(int e = 0; e<3; e++)
+					c--; */
+					
+					//screw it, since I know all the possible combo for 3 entry just set it manually
+					person pc = null;
+					person pc2=null;
+					if(c==0){pc = Ju; pc2 = Na;}
+					if(c==1){pc = Ju; pc2 = C;}
+					if(c==2){pc = Na; pc2 = C;}
+					addPair(C02,pc, pc2);
+							
+						//Thursday		
+						for(int d = 0; d<3; d++)
 						{
-							person pe = null;
-							if(e==0){pe = Ju;}
-							if(e==1){pe = Na;}
-							if(e==2){pe = C;}
-							add(C04,pe);
-							printLog();
+							person pd = null;
+							if(d==0){pd = Ju;}
+							if(d==1){pd = Na;}
+							if(d==2){pd = C;}
+							add(C03,pd);
+							//Friday
+							for(int e = 0; e<3; e++)
+							{
+								person pe = null;
+								if(e==0){pe = Ju;}
+								if(e==1){pe = Na;}
+								if(e==2){pe = C;}
+								add(C04,pe);
+								printLog();
+							}
 						}
-					}
+					//}
 				}
-			}
+			}	
 		}
 		
 		
 	}
 	
+	
+	public boolean workedToomuch()
+	{
+		boolean ret;
+		ret = (Ace.daysWorked>4) | (C.daysWorked>4) | (DLH.daysWorked>4) | (Jen.daysWorked>4) | (Ju.daysWorked>4) | (Na.daysWorked>4) ; 
+		return ret;
+	}
+	public void clearDaysWorked()
+	{		
+		Ace.setDaysWorked(1);
+		C.setDaysWorked(1);
+		DLH.setDaysWorked(0);
+		Jen.setDaysWorked(1);
+		Ju.setDaysWorked(1);
+		Na.setDaysWorked(1);
+	}
+	
 	public void printLog()
 	{
-		for(int i=0; i<1; i++)
-		{
-			for(int j=0; j<7; j++)
+		if(!workedToomuch()) { // don't add this permutation if a person worked more then 4 days
+			
+			String s = "";
+			for(int i=0; i<1; i++) //need to change i when adding other hospitals
 			{
-				ArrayList<person> blah = scheduled[i][j];
-				for(int z=0;z<blah.size();z++)
+				for(int j=0; j<7; j++)
 				{
-					System.out.print(blah.get(z).getFullName() + " - ") ;
+					ArrayList<person> blah = scheduled[i][j];
+					
+					sortByOrder(blah);   
+					for(int z=0;z<blah.size();z++)
+					{
+						
+						System.out.print(blah.get(z).getFullName() + " - ") ;
+						s = s+blah.get(z).getName()+"-";	
+					}
+					System.out.print(" | ");
+					s = s+"|";
 				}
-				System.out.print(" | ");
+				System.out.println();
 			}
-			System.out.println();
+			//System.out.println(s);
 		}
+		
+	}
+	public void sortByOrder(ArrayList<person> blah)
+	{
+		Collections.sort(blah, new Comparator<person>() {
+	        @Override public int compare(person p1, person  p2) {
+	            return p1.getOrder()- p2.getOrder();
+	        }
+
+	 });
+		
+	}
+	
+	public void addPair(ArrayList<person> a, person n, person n2)
+	{
+		//Remove all elements
+		int size = a.size();
+		for(int i=0; i<size; i++)
+		{
+			if(!a.get(0).isLock())
+			{
+				a.get(0).removeDaysWorked();
+				a.remove(0);				
+			}			
+		}
+		
+		a.add(n);
+		a.get(a.size()-1).addDaysWorked();
+		
+		a.add(n2);
+		a.get(a.size()-1).addDaysWorked();
 		
 	}
 	public void add(ArrayList<person> a, person n)
@@ -140,6 +211,7 @@ public class sche
 			// So I will remove it but add it again.
 			// Size will stay at 2
 			//keep going until I removed 1.
+			/*
 			boolean rem = false;
 			do{
 				if(a.get(0).isLock())
@@ -150,10 +222,17 @@ public class sche
 				}
 				else
 				{
+					a.get(0).removeDaysWorked();
 					a.remove(0);
 					rem = true;
 				}
 			}while(!rem);
+			*/
+			
+			//remove last
+			a.get(a.size()-1).removeDaysWorked();
+			a.remove(a.size()-1);
+			
 			
 		}
 		//first check if it's already full (size 2)
@@ -163,6 +242,7 @@ public class sche
 			if(!contains(a,n))
 			{
 				a.add(n);
+				a.get(a.size()-1).addDaysWorked();
 			}
 		}
 		
@@ -210,71 +290,22 @@ public class sche
 		scheduled[2][6] = C26;
 		
 		// DR A has fixed scheudled:
-		C00.add(A);
+		C00.add(A);				
 		C01.add(A);
 		C03.add(A);
 		C04.add(A);
 		C22.add(A);
+		for(int i=0; i<5; i++)
+		{
+			A.addDaysWorked();
+		}
 		
 		//Saturdays are fixed:
-		C05.add(Ju);
-		C05.add(C);	
-		C15.add(Jen);
-		C15.add(Na);
-		C25.add(Ace);
-	}
-	
-	
-
-
-	class person
-	{
-		String name;
-		int daysWorked;
-		String fullName;
-		boolean lock = false;
-		
-		public person(String n, String f)
-		{
-			this.name = n;
-			this.daysWorked = 0;
-			this.fullName = f;
-			
-			if(n.equals("A"))
-			{
-				lock = true;
-			}
-		}
-		public boolean isLock()
-		{
-			return this.lock;
-		}
-		public String getFullName()
-		{
-			return this.fullName;
-		}
-		public boolean isWorkFull()
-		{
-			return daysWorked>3; //4 or more days is full
-		}
-		
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public int getDaysWorked() {
-			return daysWorked;
-		}
-
-		public void setDaysWorked(int daysWorked) {
-			this.daysWorked = daysWorked;
-		}
-		
-		
+		C05.add(Ju); 			Ju.addDaysWorked();
+		C05.add(C);				C.addDaysWorked();
+		C15.add(Jen);			Jen.addDaysWorked();
+		C15.add(Na);			Na.addDaysWorked();
+		C25.add(Ace);			Ace.addDaysWorked();
 	}
 
 }
