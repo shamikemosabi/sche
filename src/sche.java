@@ -1,11 +1,13 @@
+import java.io.*;
 import java.util.*;
 
 public class sche
 {
+	
+	boolean debug =false;
 	// 3 rows for 3 diff hospitals
 	// 7 columns for number of days a week
 	ArrayList[][] scheduled = new ArrayList[3][7]; 
-	
 	
 	//doctors
 	person A = new person("A", "Dr. A", 1);
@@ -15,7 +17,6 @@ public class sche
 	person Jen = new person("Jen", "Jen", 5);
 	person Ju  = new person ("Ju", "Julia", 6);
 	person Na =  new person ("Na", "Naef", 7 );
-	
 	
 	//Array columns
 	ArrayList<person> C00 = new ArrayList<person>();
@@ -42,11 +43,14 @@ public class sche
 	ArrayList<person> C25 = new ArrayList<person>();
 	ArrayList<person> C26 = new ArrayList<person>();
 
-	
+	FileWriter pw = null;
 	public sche()
 	{
+		File f = new File("log.txt");
+		if(f.exists()) { f.delete();}
+		
 		setUpScheduled();
-		mainWork();
+		mainWork(true);
 	
 		
 	}
@@ -57,10 +61,12 @@ public class sche
 		
 	}
 	
-	public void mainWork()
+	//bool = true, wed is single
+	public void mainWork(boolean bool)
 	{
-		//Monday 
+		
 		//C00 - Bixby - Julia, Naef, Cindy 
+		//Monday 
 		for(int a=0; a<3; a++)
 		{
 			person pa = null;
@@ -81,17 +87,6 @@ public class sche
 				//Wednesday
 				for(int c = 0; c<3; c++)
 				{
-					/*
-					do{ //only need this when a day doesn't have a lock person, need to add until full
-					person pc = null;
-					if(c==0){pc = Ju;}
-					if(c==1){pc = Na;}
-					if(c==2){pc = C;}
-					add(C02,pc);
-					c++;
-					}while(C02.size()<2);
-					c--; */
-					
 					//screw it, since I know all the possible combo for 3 entry just set it manually
 					person pc = null;
 					person pc2=null;
@@ -116,10 +111,104 @@ public class sche
 								if(e==1){pe = Na;}
 								if(e==2){pe = C;}
 								add(C04,pe);
+
+			//Lakewood - Jen, DLH, Naef 
+			//Monday
+			for(int f=0; f<3; f++)
+			{
+				if(f==0){pc = Jen; pc2 = DLH;}
+				if(f==1){pc = Jen; pc2 = Na;}
+				if(f==2){pc = DLH; pc2 = Na;}
+				addPair(C10,pc, pc2);
+				
+				//Tuesday
+				for(int g=0; g<3; g++)
+				{
+					if(g==0){pc = Jen; pc2 = DLH;}
+					if(g==1){pc = Jen; pc2 = Na;}
+					if(g==2){pc = DLH; pc2 = Na;}
+					addPair(C11,pc, pc2);
+					
+					//Wednesday
+					for(int h=0; h<3; h++)
+					{
+						if(bool) { //wed is single
+							if(h==0){pc = Jen; }
+							if(h==1){pc = DLH;}
+							if(h==2){pc = Na;}
+							addSingle(C12,pc);	
+						}
+						else{
+							if(h==0){pc = Jen; pc2 = DLH;}
+							if(h==1){pc = Jen; pc2 = Na;}
+							if(h==2){pc = DLH; pc2 = Na;}
+							addPair(C12,pc, pc2);
+						}
+					
+						//Thursday
+						for(int i=0; i<3; i++)
+						{
+							if(!bool) { 
+								if(i==0){pc = Jen; }
+								if(i==1){pc = DLH;}
+								if(i==2){pc = Na;}
+								addSingle(C13,pc);	
+							}
+							else{
+								if(i==0){pc = Jen; pc2 = DLH;}
+								if(i==1){pc = Jen; pc2 = Na;}
+								if(i==2){pc = DLH; pc2 = Na;}
+								addPair(C13,pc, pc2);
+							}
+							//Friday
+							for(int j=0; j<3; j++)
+							{
+								if(j==0){pc = Jen; pc2 = DLH;}
+								if(j==1){pc = Jen; pc2 = Na;}
+								if(j==2){pc = DLH; pc2 = Na;}
+								addPair(C14,pc, pc2);
+				
+				//Lincoln
+				//Monday -  Ace, Cindy
+				for(int k=0; k<2; k++)
+				{
+					if(k==0){pc = Ace; }
+					if(k==1){pc = C;}					
+					addSingle(C20,pc);	
+					//Tuesday
+					for(int l=0; l<2; l++)
+					{
+						if(l==0){pc = Ace; }
+						if(l==1){pc = C;}					
+						addSingle(C21,pc);
+						//skip Wednesday, Dr A is fixed
+						//Thursday
+						for(int m=0; m<2; m++)
+						{
+							if(m==0){pc = Ace; }
+							if(m==1){pc = C;}					
+							addSingle(C23,pc);
+							//Friday
+							for(int n=0; n<2; n++)
+							{
+								if(n==0){pc = Ace; }
+								if(n==1){pc = C;}					
+								addSingle(C24,pc);
 								printLog();
+							}							
+						}
+					}
+					
+				}
+							}	
+						}
+					}
+					
+				}
+				
+			}
 							}
 						}
-					//}
 				}
 			}	
 		}
@@ -144,12 +233,59 @@ public class sche
 		Na.setDaysWorked(1);
 	}
 	
+	public void log(String n)
+	{
+		
+		try
+		{
+			if(!debug)
+			{
+				pw.write(n);
+				
+			}
+			else
+			{
+				System.out.print(n);
+			}
+			
+		}
+		
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public void logln(String n)
+	{
+		
+		try
+		{
+			if(!debug)
+			{
+				pw.write(n+"\n");
+				
+			}
+			else
+			{
+				System.out.println(n);
+			}
+			
+		}
+		
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 	public void printLog()
 	{
+		try{			
+			pw = new FileWriter("log.txt", true);
 		if(!workedToomuch()) { // don't add this permutation if a person worked more then 4 days
 			
 			String s = "";
-			for(int i=0; i<1; i++) //need to change i when adding other hospitals
+			for(int i=0; i<3; i++) 
 			{
 				for(int j=0; j<7; j++)
 				{
@@ -159,17 +295,26 @@ public class sche
 					for(int z=0;z<blah.size();z++)
 					{
 						
-						System.out.print(blah.get(z).getFullName() + " - ") ;
+						//System.out.print(blah.get(z).getFullName() + " - ") ;
 						s = s+blah.get(z).getName()+"-";	
 					}
-					System.out.print(" | ");
+					//System.out.print(" | ");
 					s = s+"|";
 				}
-				System.out.println();
-			}
-			//System.out.println(s);
+				
+				//s = s+"\n";
+			}					
+			logln(s);
 		}
-		
+			
+			if(!debug)
+				pw.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+			
 	}
 	public void sortByOrder(ArrayList<person> blah)
 	{
@@ -179,6 +324,20 @@ public class sche
 	        }
 
 	 });
+		
+	}
+	
+	public void addSingle(ArrayList<person> a, person n)
+	{
+		if(a.size()>0)
+		{
+			a.get(0).removeDaysWorked();
+			a.remove(0);
+		}
+
+		
+		a.add(n);
+		a.get(0).addDaysWorked();
 		
 	}
 	
