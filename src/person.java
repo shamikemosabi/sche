@@ -6,6 +6,9 @@
 		String fullName;
 		boolean lock = false;
 		int order = 0; // ABC order
+		
+		boolean [] workDays = new boolean[7]; // Each index is a day. True means this dr is working. false means day off.
+		
 		public person(String n, String f, int o)
 		{
 			this.name = n;
@@ -17,7 +20,51 @@
 				lock = true;
 			}
 			
-			this.order = o; 
+			this.order = o; 			
+		}
+	
+		
+		/**
+		 * 
+		 * @return - return true if there are 2 consecutive days off
+		 */
+		public boolean twoConsequtiveDaysOff()
+		{
+			boolean ret=true;
+			
+			//Sunday - workDays[6] should always be false.
+			//Meaning if monday [0], or Saturday[5] is false then there's 2 consecutive days off
+			
+			if(workDays[0]==false || workDays[5]==false)
+			{
+				return ret;
+			}
+			
+			boolean lastBool =false;
+			//FALSE is day off
+			for(int i = 0; i< workDays.length; i++)
+			{							
+				ret = (!workDays[i]) && lastBool;
+				lastBool = (!workDays[i]);
+				
+				if(ret)
+				{
+					break;
+				}
+			}
+			
+			return ret;
+			
+		}
+		
+		public boolean[] getWorkDays()
+		{
+			return workDays;
+		}
+		
+		public void clearWorkDays()
+		{
+			workDays = new boolean[7];
 		}
 		
 		public int getOrder()

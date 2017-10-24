@@ -9,50 +9,51 @@ public class sche
 	// 7 columns for number of days a week
 	ArrayList[][] scheduled = new ArrayList[3][7]; 
 	
+	ArrayList<String> main = new ArrayList<String>();
 	//doctors
-	person A = new person("A", "Dr. A", 1);
-	person Ace = new person("Ace", "Acevado", 2);
-	person C = new person("C", "Cindy", 3);
-	person DLH = new person("DLH", "De La Hoya", 4);
-	person Jen = new person("Jen", "Jen", 5);
-	person Ju  = new person ("Ju", "Julia", 6);
-	person Na =  new person ("Na", "Naef", 7 );
+	person A   = null;
+	person Ace = null;
+	person C   = null;
+	person DLH = null;
+	person Jen = null;
+	person Ju  = null;
+	person Na  = null;
 	
 	//Array columns
-	ArrayList<person> C00 = new ArrayList<person>();
-	ArrayList<person> C01 = new ArrayList<person>();
-	ArrayList<person> C02 = new ArrayList<person>();
-	ArrayList<person> C03 = new ArrayList<person>();
-	ArrayList<person> C04 = new ArrayList<person>();
-	ArrayList<person> C05 = new ArrayList<person>();
-	ArrayList<person> C06 = new ArrayList<person>();
-
-	ArrayList<person> C10 = new ArrayList<person>();
-	ArrayList<person> C11 = new ArrayList<person>();
-	ArrayList<person> C12 = new ArrayList<person>();
-	ArrayList<person> C13 = new ArrayList<person>();
-	ArrayList<person> C14 = new ArrayList<person>();
-	ArrayList<person> C15 = new ArrayList<person>();
-	ArrayList<person> C16 = new ArrayList<person>();
-
-	ArrayList<person> C20 = new ArrayList<person>();
-	ArrayList<person> C21 = new ArrayList<person>();
-	ArrayList<person> C22 = new ArrayList<person>();
-	ArrayList<person> C23 = new ArrayList<person>();
-	ArrayList<person> C24 = new ArrayList<person>();
-	ArrayList<person> C25 = new ArrayList<person>();
-	ArrayList<person> C26 = new ArrayList<person>();
+	ArrayList<person> C00 = null;
+	ArrayList<person> C01 = null;
+	ArrayList<person> C02 = null;
+	ArrayList<person> C03 = null;
+	ArrayList<person> C04 = null;
+	ArrayList<person> C05 = null;
+	ArrayList<person> C06 = null;
+                          
+	ArrayList<person> C10 = null;
+	ArrayList<person> C11 = null;
+	ArrayList<person> C12 = null;
+	ArrayList<person> C13 = null;
+	ArrayList<person> C14 = null;
+	ArrayList<person> C15 = null;
+	ArrayList<person> C16 = null;
+                        
+	ArrayList<person> C20 = null;
+	ArrayList<person> C21 = null;
+	ArrayList<person> C22 = null;
+	ArrayList<person> C23 = null;
+	ArrayList<person> C24 = null;
+	ArrayList<person> C25 = null;
+	ArrayList<person> C26 = null;
 
 	FileWriter pw = null;
 	public sche()
 	{
 		File f = new File("log.txt");
 		if(f.exists()) { f.delete();}
+				
+		mainWork(true);		
+		mainWork(false);
 		
-		setUpScheduled();
-		mainWork(true);
-	
-		
+		print();
 	}
 	
 	public static void main(String[] args)
@@ -64,7 +65,7 @@ public class sche
 	//bool = true, wed is single
 	public void mainWork(boolean bool)
 	{
-		
+		setUpScheduled();
 		//C00 - Bixby - Julia, Naef, Cindy 
 		//Monday 
 		for(int a=0; a<3; a++)
@@ -215,7 +216,28 @@ public class sche
 		
 		
 	}
-	
+
+	public void print()
+	{
+		try{
+			if(!debug)
+				pw = new FileWriter("log.txt", true);
+			
+			Collections.sort(main);
+			for(int i=0; i<main.size(); i++)
+			{
+				logln(main.get(i));
+			}
+			
+			if(!debug)
+				pw.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
 	
 	public boolean workedToomuch()
 	{
@@ -281,7 +303,7 @@ public class sche
 	public void printLog()
 	{
 		try{			
-			pw = new FileWriter("log.txt", true);
+			
 		if(!workedToomuch()) { // don't add this permutation if a person worked more then 4 days
 			
 			String s = "";
@@ -296,25 +318,118 @@ public class sche
 					{
 						
 						//System.out.print(blah.get(z).getFullName() + " - ") ;
-						s = s+blah.get(z).getName()+"-";	
+						s = s+blah.get(z).getFullName()+"- ";							
+						setUpWorkDays(blah.get(z), j);
 					}
 					//System.out.print(" | ");
 					s = s+"|";
 				}
 				
-				//s = s+"\n";
-			}					
-			logln(s);
-		}
+				s = s+",";
+			}	
 			
-			if(!debug)
-				pw.close();
+			//At this point I should know all Drs and what day they work.
+			if(checkWorkSameDay() && twoDaysOff())
+			{
+				main.add(formatString(s));
+			}
+			
+			clearAllWorkDays();
+			
+		}
+						
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 		}
 			
+	}
+	
+	public String formatString(String s)
+	{
+		String ret = "";
+		StringTokenizer st = new StringTokenizer(s,",");
+		while (st.hasMoreElements()) 
+		{						
+			StringTokenizer st2 = new StringTokenizer(st.nextToken(),"|");			
+			while(st2.hasMoreElements())
+			{
+				String str = st2.nextToken();
+				str =  String.format("%1$20s", str) + "|";
+				ret = ret + str;
+			}
+			ret = ret+"\n";
+		}
+				
+		return ret;
+	}
+	/**
+	 * since it's the outcome of all permutation and doctors can work different hospital
+	 * there's a chance the same doctor work in 2 different hospital on the same day.
+	 * Need to ignore those.
+	 * @return false if a dr is working at 2 hospitals on the same day
+	 */
+	public boolean checkWorkSameDay()
+	{
+		boolean ret=true;
+		
+		
+		for(int j=0; j<7; j++)
+		{
+			ArrayList<String> temp = new ArrayList<String>();
+			for(int i=0; i<3 ; i++)
+			{
+				ArrayList<person> blah = scheduled[i][j];					
+				for(int z=0;z<blah.size();z++)
+				{
+					person p = blah.get(z);
+					if(!temp.contains(p.getName()))
+					{
+						temp.add(p.getName());
+					}
+					else//Already exist
+					{
+						ret = false;
+						return ret;
+					}
+				}
+			}
+					
+		}
+		return ret;
+	}
+	
+	/**
+	 * 
+	 * @return - True if all DR have 2 days off, meaning this permutation is legit.
+	 */
+	public boolean twoDaysOff()
+	{	
+		return Ace.twoConsequtiveDaysOff()
+		&& C.twoConsequtiveDaysOff()
+		&& DLH.twoConsequtiveDaysOff()
+		&& Jen.twoConsequtiveDaysOff()
+		&& Ju.twoConsequtiveDaysOff()
+		&& Na.twoConsequtiveDaysOff();
+		
+	}
+	
+	//Mark which days this person worked
+	// parameter j will tell me what day of the week.. 0- monday, 6 - Sunday.
+	public void setUpWorkDays(person p, int j)
+	{
+		p.getWorkDays()[j] = true;
+	}
+	public void clearAllWorkDays()
+	{		
+		A.clearWorkDays();
+		Ace.clearWorkDays();
+		C.clearWorkDays(); 
+		DLH.clearWorkDays();
+		Jen.clearWorkDays();
+		Ju.clearWorkDays(); 
+		Na.clearWorkDays();
 	}
 	public void sortByOrder(ArrayList<person> blah)
 	{
@@ -426,6 +541,39 @@ public class sche
 	 */
 	public void setUpScheduled()
 	{
+		A   = new person("A", "Dr. A", 1);
+		Ace = new person("Ace", "Acevado", 2);
+		C   = new person("C", "Cindy", 3);
+		DLH = new person("DLH", "De La Hoya", 4);
+		Jen = new person("Jen", "Jen", 5);
+		Ju  = new person ("Ju", "Julia", 6);
+		Na  =  new person ("Na", "Naef", 7 );		
+		
+		C00 = new ArrayList<person>();
+		C01 = new ArrayList<person>();
+		C02 = new ArrayList<person>();
+		C03 = new ArrayList<person>();
+		C04 = new ArrayList<person>();
+		C05 = new ArrayList<person>();
+		C06 = new ArrayList<person>();
+
+		C10 = new ArrayList<person>();
+		C11 = new ArrayList<person>();
+		C12 = new ArrayList<person>();
+		C13 = new ArrayList<person>();
+		C14 = new ArrayList<person>();
+		C15 = new ArrayList<person>();
+		C16 = new ArrayList<person>();
+
+		C20 = new ArrayList<person>();
+		C21 = new ArrayList<person>();
+		C22 = new ArrayList<person>();
+		C23 = new ArrayList<person>();
+		C24 = new ArrayList<person>();
+		C25 = new ArrayList<person>();
+		C26 = new ArrayList<person>();
+
+		
 		scheduled[0][0] = C00;
 		scheduled[0][1] = C01;
 		scheduled[0][2] = C02;
